@@ -103,7 +103,7 @@ public abstract class XMLNodeTree extends XMLNode implements
             if (mNodeList == EMPTY) {
                 mNodeList = new ArrayCollection<>();
             }
-            if (mNodeList.containsExact(xmlNode)) {
+            if (xmlNode.getParentNode() == this && mNodeList.containsExact(xmlNode)) {
                 throw new IllegalArgumentException("Duplicate node: " + xmlNode);
             }
             boolean added = mNodeList.add(xmlNode);
@@ -123,7 +123,7 @@ public abstract class XMLNodeTree extends XMLNode implements
             if (mNodeList == EMPTY) {
                 mNodeList = new ArrayCollection<>();
             }
-            if (mNodeList.containsExact(xmlNode)) {
+            if (xmlNode.getParentNode() == this && mNodeList.containsExact(xmlNode)) {
                 throw new IllegalArgumentException("Duplicate node: " + xmlNode);
             }
             mNodeList.add(i, xmlNode);
