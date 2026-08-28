@@ -170,7 +170,7 @@ public class XmlCoder {
                     logVerbose(i + "/" + size + " " + packageBlock.getName()
                             + ":" + typeBlock.getTypeName() + resConfig.getQualifiers());
                     XmlSerializer serializer = serializerFactory.createSerializer(typeBlock);
-                    int entriesCount = decode(serializer, specTypePair, resConfig, decodedEntries);
+                    int entriesCount = decode(serializer, specTypePair, typeBlock, decodedEntries);
                     serializerFactory.onFinish(serializer, entriesCount);
                 }
             }
@@ -181,6 +181,23 @@ public class XmlCoder {
                            Predicate<Entry> decodedEntries) throws IOException {
             Iterator<ResourceEntry> resources = specTypePair.getResources();
             return decode(serializer, resources, resConfig, decodedEntries);
+        }
+        private int decode(XmlSerializer serializer,
+                           SpecTypePair specTypePair,
+                           TypeBlock typeBlock,
+                           Predicate<Entry> decodedEntries) throws IOException {
+            // The type block is constant for the whole pass, resolving it
+            // per entry hashes the config against the qualifiers map each time.
+            Iterator<ResourceEntry> resources = specTypePair.getResources();
+            int entriesCount = 0;
+            while (resources.hasNext()){
+                ResourceEntry resourceEntry = resources.next();
+                Entry entry = typeBlock.getEntry((short) (resourceEntry.getResourceId() & 0xffff));
+                if(decodeEntry(serializer, entry, decodedEntries)){
+                    entriesCount++;
+                }
+            }
+            return entriesCount;
         }
         public int decode(XmlSerializer serializer,
                            Iterator<ResourceEntry> resources,
@@ -203,7 +220,11 @@ public class XmlCoder {
                            ResourceEntry resourceEntry,
                            ResConfig resConfig,
                            Predicate<Entry> decodedEntries) throws IOException {
-            Entry entry = resourceEntry.get(resConfig);
+            return decodeEntry(serializer, resourceEntry.get(resConfig), decodedEntries);
+        }
+        private boolean decodeEntry(XmlSerializer serializer,
+                           Entry entry,
+                           Predicate<Entry> decodedEntries) throws IOException {
             if(entry == null || decodedEntries.test(entry)){
                 return false;
             }

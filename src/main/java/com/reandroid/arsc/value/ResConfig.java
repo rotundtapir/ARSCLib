@@ -498,8 +498,18 @@ public class ResConfig extends ResConfigBase implements JSONConvert<JSONObject>,
     }
     @Override
     public int hashCode(){
-        byte[] bts = ByteArray.trimTrailZeros(getValueBytes());
-        return Arrays.hashCode(bts);
+        // Same value as Arrays.hashCode(ByteArray.trimTrailZeros(getValueBytes()))
+        // without copying the config block per call.
+        byte[] bts = getValueBytes();
+        int length = bts.length;
+        while (length > 0 && bts[length - 1] == 0){
+            length --;
+        }
+        int result = 1;
+        for(int i = 0; i < length; i++){
+            result = 31 * result + bts[i];
+        }
+        return result;
     }
     @Override
     public boolean equals(Object obj){
