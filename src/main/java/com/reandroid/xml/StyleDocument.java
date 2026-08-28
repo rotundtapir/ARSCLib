@@ -22,7 +22,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Iterator;
 
 public class StyleDocument extends XMLDocument implements
@@ -61,14 +60,12 @@ public class StyleDocument extends XMLDocument implements
         return toText(xml, escapeXmlText);
     }
     public String getStyledString(){
-        StringWriter writer = new StringWriter();
+        StringBuilder builder = new StringBuilder();
         try {
-            writeStyledText(writer);
-            writer.flush();
-            writer.close();
+            writeStyledText(builder);
         } catch (IOException ignored) {
         }
-        return writer.toString();
+        return builder.toString();
     }
     void writeStyledText(Appendable appendable) throws IOException {
         Iterator<XMLNode> iterator = iterator();

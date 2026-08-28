@@ -21,7 +21,6 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Iterator;
 
 public abstract class XMLNode implements Node {
@@ -80,14 +79,12 @@ public abstract class XMLNode implements Node {
     }
     abstract void write(Appendable writer, boolean xml, boolean escapeXmlText) throws IOException;
     public String toText(boolean xml, boolean escapeXmlText){
-        StringWriter writer = new StringWriter();
+        StringBuilder builder = new StringBuilder();
         try {
-            write(writer, xml, escapeXmlText);
-            writer.flush();
-            writer.close();
+            write(builder, xml, escapeXmlText);
         } catch (IOException ignored) {
         }
-        return writer.toString();
+        return builder.toString();
     }
     public String getDebugText() {
         return XMLDebugStringBuilder.build(this);

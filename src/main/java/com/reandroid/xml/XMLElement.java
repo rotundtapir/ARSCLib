@@ -30,7 +30,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -435,18 +434,16 @@ public class XMLElement extends XMLNodeTree implements Element<XMLNode> {
         return getTextContent(false);
     }
     public String getTextContent(boolean escapeXmlText) {
-        StringWriter writer = new StringWriter();
+        StringBuilder builder = new StringBuilder();
         try {
             Iterator<XMLNode> iterator = iterator();
             while (iterator.hasNext()) {
                 XMLNode child = iterator.next();
-                child.write(writer, true, escapeXmlText);
+                child.write(builder, true, escapeXmlText);
             }
-            writer.flush();
-            writer.close();
         } catch (IOException ignored) {
         }
-        return writer.toString();
+        return builder.toString();
     }
     public boolean hasAttribute(String name) {
         return getAttribute(name) != null;

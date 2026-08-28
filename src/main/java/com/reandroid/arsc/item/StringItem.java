@@ -105,7 +105,9 @@ public class StringItem extends StringBlock implements JSONConvert<JSONObject>, 
         }
     }
     private void reUpdateReferences(int newIndex) {
-        Iterator<ReferenceItem> iterator = HashSetStore.clonedIterator(mReferencedSet);
+        // set(int) implementations only write the index value, they never
+        // touch this set, so iterating the live set is safe.
+        Iterator<ReferenceItem> iterator = HashSetStore.iterator(mReferencedSet);
         while (iterator.hasNext()) {
             ReferenceItem reference = iterator.next();
             reference.set(newIndex);
