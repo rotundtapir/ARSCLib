@@ -34,12 +34,15 @@ import com.reandroid.arsc.value.ResTableMapEntry;
 import com.reandroid.arsc.value.ResValue;
 import com.reandroid.arsc.value.ResValueMap;
 import com.reandroid.arsc.value.ValueHeader;
+import com.reandroid.arsc.value.ValueItem;
 import com.reandroid.arsc.value.ValueType;
 import com.reandroid.utils.io.IOUtil;
 import com.reandroid.xml.StyleDocument;
 import com.reandroid.xml.XMLAttribute;
 import com.reandroid.xml.XMLElement;
 import com.reandroid.xml.XMLFactory;
+import com.reandroid.xml.XMLNode;
+import com.reandroid.xml.XMLText;
 import com.reandroid.xml.XMLUtil;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -52,6 +55,27 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 public class XmlCoder {
+
+    static void setValueAsPlainString(ValueItem valueItem, XMLElement element, String text) {
+        // The element's children were already serialized into text. Routing them
+        // through a StyleDocument copy would serialize them a second time, but
+        // only matches text when every child is a text node - copyInner drops
+        // other node types.
+        if (hasOnlyTextNodes(element)) {
+            valueItem.setValueAsString(XmlSanitizer.unEscapeUnQuote(text));
+        } else {
+            valueItem.setValueAsString(StyleDocument.copyInner(element));
+        }
+    }
+    private static boolean hasOnlyTextNodes(XMLElement element) {
+        java.util.Iterator<XMLNode> iterator = element.iterator();
+        while (iterator.hasNext()) {
+            if (!(iterator.next() instanceof XMLText)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     private static XmlCoder sInstance;
 
@@ -370,7 +394,7 @@ public class XmlCoder {
                 }
                 resValue.setValue(encodeResult);
             }else {
-                resValue.setValueAsString(StyleDocument.copyInner(element));
+                setValueAsPlainString(resValue, element, text);
             }
         }
         private boolean isTypeId(XMLElement element){
@@ -590,7 +614,7 @@ public class XmlCoder {
                 valueMap.setValue(encodeResult);
                 return;
             }
-            valueMap.setValueAsString(StyleDocument.copyInner(child));
+            setValueAsPlainString(valueMap, child, text);
         }
         private void startTag(XmlSerializer serializer, String name) throws IOException {
             XmlDecodeUtil.bagIndent(serializer);
@@ -636,7 +660,7 @@ public class XmlCoder {
                 valueMap.setValue(encodeResult);
                 return;
             }
-            valueMap.setValueAsString(StyleDocument.copyInner(child));
+            setValueAsPlainString(valueMap, child, text);
         }
         public void encodeStyle(XMLElement child, Entry entry) throws IOException{
             entry.ensureComplex(true);
