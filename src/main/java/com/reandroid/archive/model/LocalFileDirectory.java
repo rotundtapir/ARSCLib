@@ -45,7 +45,9 @@ public class LocalFileDirectory {
         int index = 0;
         CentralFileDirectory centralFileDirectory = getCentralFileDirectory();
         long length = zipInput.getLength();
-        InputStream inputStream = zipInput.getInputStream(0, length);
+        // Header-sized reads: the default 100K buffer is reloaded at every
+        // seek, reading ~100K per entry just to parse a ~50 byte header.
+        InputStream inputStream = zipInput.getInputStream(0, length, 4096);
         for(CentralEntryHeader ceh : centralFileDirectory.getHeaderList()){
             offset = ceh.getLocalRelativeOffset();
             inputStream.reset();

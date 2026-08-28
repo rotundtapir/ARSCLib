@@ -58,6 +58,14 @@ public class ZipFileInput extends ZipInput {
         mCurrentInputStream = new FileChannelInputStream(fileChannel, length);
         return mCurrentInputStream;
     }
+    @Override
+    public InputStream getInputStream(long offset, long length, int bufferSize) throws IOException {
+        closeCurrentInputStream();
+        FileChannel fileChannel = getFileChannel();
+        fileChannel.position(offset);
+        mCurrentInputStream = new FileChannelInputStream(fileChannel, length, bufferSize);
+        return mCurrentInputStream;
+    }
 
     @Override
     public byte[] getFooter(int minLength) throws IOException {

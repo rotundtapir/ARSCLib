@@ -16,7 +16,11 @@
 package com.reandroid.archive.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public abstract class ZipInput implements ReadOnlyStream {
     public abstract byte[] getFooter(int minLength) throws IOException;
+    public InputStream getInputStream(long offset, long length, int bufferSize) throws IOException {
+        return getInputStream(offset, length);
+    }
 }
