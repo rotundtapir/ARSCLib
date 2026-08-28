@@ -1013,8 +1013,8 @@ public class ArrayCollection<T> implements ArraySupplier<T>, List<T>, Set<T>, Sw
         Object[] elements = this.mElements;
         int size = this.size;
         int length = size - amount;
-        for(int i = position; i < length; i++){
-            elements[i] = elements[i + amount];
+        if(length > position){
+            System.arraycopy(elements, position + amount, elements, position, length - position);
         }
         for(int i = length; i < size; i++){
             elements[i] = null;
@@ -1029,14 +1029,12 @@ public class ArrayCollection<T> implements ArraySupplier<T>, List<T>, Set<T>, Sw
         ensureCapacity(amount);
         Object[] elements = this.mElements;
         int size = this.size;
-        int i = size - 1;
-        while (i >= position){
-            elements[i + amount] = elements[i];
-            i--;
+        if(size > position){
+            System.arraycopy(elements, position, elements, position + amount, size - position);
         }
         this.size = size + amount;
         amount = position + amount;
-        for(i = position; i < amount; i++){
+        for(int i = position; i < amount; i++){
             elements[i] = null;
         }
         this.mLocked = locked;
@@ -1065,9 +1063,7 @@ public class ArrayCollection<T> implements ArraySupplier<T>, List<T>, Set<T>, Sw
         return update;
     }
     private void arrayCopy(Object[] source, Object[] destination, int length){
-        for(int i = 0; i < length; i++){
-            destination[i] = source[i];
-        }
+        System.arraycopy(source, 0, destination, 0, length);
     }
     private Object[] getNewArray(Object[] source, int length){
         Object[] result = getNewArray(length);
@@ -1115,6 +1111,12 @@ public class ArrayCollection<T> implements ArraySupplier<T>, List<T>, Set<T>, Sw
         }
         int amount = this.mLastGrow;
         if(amount >= GROW_LIMIT){
+            // Grow geometrically, a flat step makes appending
+            // n elements copy O(n^2 / GROW_LIMIT) slots.
+            int half = this.size >> 1;
+            if(half > amount){
+                amount = half;
+            }
             return amount;
         }
         if(amount == 0){
