@@ -66,15 +66,14 @@ public abstract class Chunk<T extends HeaderBlock> extends ExpandableBlockContai
     }
     @Override
     protected final void onRefreshed() {
-        updateAlign();
-        getHeaderBlock().refreshHeader();
-        onChunkRefreshed();
-    }
-
-    private void updateAlign() {
+        // Count the chunk once: aligning and then sizing the header each
+        // counted the whole subtree again.
         AlignItem alignItem = getAlignItem();
-        alignItem.setSize(0);
-        alignItem.align(this);
+        alignItem.clear();
+        int count = countBytes();
+        count += alignItem.align(count);
+        getHeaderBlock().refreshHeader(count);
+        onChunkRefreshed();
     }
     protected abstract void onChunkRefreshed();
     public void onChunkLoaded() {

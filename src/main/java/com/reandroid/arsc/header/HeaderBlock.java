@@ -99,6 +99,10 @@ public class HeaderBlock extends ExpandableBlockContainer implements BlockLoad {
         refreshHeaderSize();
         refreshChunkSize();
     }
+    public final void refreshHeader(int chunkSize){
+        refreshHeaderSize();
+        setChunkSize(chunkSize);
+    }
     private void refreshHeaderSize(){
         setHeaderSize((short)countBytes());
     }
