@@ -21,8 +21,6 @@ import com.reandroid.archive.ArchiveEntry;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.Inflater;
-import java.util.zip.InflaterInputStream;
 
 public class ArchiveEntrySource<T extends ZipInput> extends InputSource {
 
@@ -85,8 +83,7 @@ public class ArchiveEntrySource<T extends ZipInput> extends InputSource {
         ArchiveEntry archiveEntry = getArchiveEntry();
         InputStream inputStream = getZipSource().getInputStream(
                 archiveEntry.getFileOffset(), archiveEntry.getDataSize());
-        return new InflaterInputStream(inputStream,
-                new Inflater(true), 512);
+        return new RawInflaterInputStream(inputStream);
     }
     @Override
     public long getLength() throws IOException{
