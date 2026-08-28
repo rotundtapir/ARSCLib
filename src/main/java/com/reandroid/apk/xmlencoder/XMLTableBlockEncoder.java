@@ -112,6 +112,9 @@ public class XMLTableBlockEncoder {
         encodeValues(pubXmlFileList);
 
         encodeNonTypeValues(pubXmlFileList);
+
+        tableBlock.refresh();
+
     }
     private void loadPublicXmlFiles(List<File> pubXmlFileList) throws IOException {
         for(File pubXmlFile:pubXmlFileList){
