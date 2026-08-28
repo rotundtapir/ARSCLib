@@ -26,12 +26,16 @@ import com.reandroid.archive.io.CountingOutputStream;
 import com.reandroid.archive.io.ZipOutput;
 import com.reandroid.utils.io.FileUtil;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
 class OutputSource {
+
+    private static final int WRITE_BUFFER_SIZE = 64 * 1024;
+
     private final InputSource inputSource;
     private LocalFileHeader lfh;
     private APKLogger apkLogger;
@@ -44,13 +48,16 @@ class OutputSource {
     void writeBuffer(ZipOutput zipOutput) throws IOException {
         LocalFileHeader lfh = getLocalFileHeader();
         InputSource inputSource = getInputSource();
-        OutputStream rawStream = zipOutput.getOutputStream();
+        OutputStream rawStream = new BufferedOutputStream(
+                zipOutput.getOutputStream(), WRITE_BUFFER_SIZE);
         CountingOutputStream<OutputStream> rawCounter = new CountingOutputStream<>(rawStream);
         CountingOutputStream<DeflaterOutputStream> deflateCounter = null;
+        Deflater deflater = null;
 
         if(inputSource.getMethod() != Archive.STORED){
+            deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
             DeflaterOutputStream deflaterInputStream =
-                    new DeflaterOutputStream(rawCounter, new Deflater(Deflater.DEFAULT_COMPRESSION, true), true);
+                    new DeflaterOutputStream(rawCounter, deflater, WRITE_BUFFER_SIZE, true);
             deflateCounter = new CountingOutputStream<>(deflaterInputStream, false);
         }
         if(deflateCounter != null){
@@ -58,8 +65,10 @@ class OutputSource {
             inputSource.write(deflateCounter);
             deflateCounter.close();
             rawCounter.close();
+            deflater.end();
         }else {
             inputSource.write(rawCounter);
+            rawStream.flush();
         }
 
         lfh.setCompressedSize(rawCounter.getSize());
