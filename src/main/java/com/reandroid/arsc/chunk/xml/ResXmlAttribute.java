@@ -56,6 +56,9 @@ public class ResXmlAttribute extends AttributeValue implements
     private ReferenceItem mNameIdReference;
     private ReferenceItem mValueStringReference;
     private ResXmlStartNamespace mLinkedNamespace;
+    private ResourceEntry mResolvedName;
+    private PackageBlock mResolvedNameContext;
+    private int mResolvedNameId;
 
     public ResXmlAttribute(int attributeUnitSize) {
         super(attributeUnitSize, OFFSET_SIZE);
@@ -686,6 +689,27 @@ public class ResXmlAttribute extends AttributeValue implements
     }
     public void serialize(XmlSerializer serializer) throws IOException {
         serialize(serializer, true);
+    }
+    @Override
+    public ResourceEntry resolveName() {
+        // Serializing one attribute resolves its name up to four times
+        // (string check, value, name, uri); resolution walks the package
+        // chain, so remember the result per (id, package context).
+        int nameId = getNameId();
+        if (nameId == 0) {
+            return super.resolveName();
+        }
+        PackageBlock context = getPackageBlock();
+        ResourceEntry resolved = this.mResolvedName;
+        if (resolved != null && nameId == this.mResolvedNameId
+                && context == this.mResolvedNameContext) {
+            return resolved;
+        }
+        resolved = super.resolveName();
+        this.mResolvedName = resolved;
+        this.mResolvedNameContext = context;
+        this.mResolvedNameId = nameId;
+        return resolved;
     }
     public void serialize(XmlSerializer serializer, boolean decode) throws IOException {
         String value;
