@@ -69,11 +69,16 @@ public abstract class ApkModuleDecoder extends ApkModuleCoder{
         logMessage("Extracting root files ...");
         File rootDir = new File(mainDirectory, ApkUtil.ROOT_NAME);
         for(InputSource inputSource:apkModule.getInputSources()){
-            if(containsDecodedPath(inputSource.getAlias())){
+            String alias = inputSource.getAlias();
+            if(containsDecodedPath(alias)){
+                continue;
+            }
+            if(isExcluded(alias)){
+                logVerbose("Skip root file: " + alias);
                 continue;
             }
             extractRootFile(rootDir, inputSource);
-            addDecodedPath(inputSource.getAlias());
+            addDecodedPath(alias);
         }
     }
     public void decodeDexProfile(File mainDirectory) throws IOException {
