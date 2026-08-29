@@ -61,11 +61,15 @@ class OutputSource {
             deflateCounter = new CountingOutputStream<>(deflaterInputStream, false);
         }
         if(deflateCounter != null){
-            rawCounter.disableCrc(true);
-            inputSource.write(deflateCounter);
-            deflateCounter.close();
-            rawCounter.close();
-            deflater.end();
+            try {
+                rawCounter.disableCrc(true);
+                inputSource.write(deflateCounter);
+                deflateCounter.close();
+                rawCounter.close();
+            } finally {
+                // Native zlib state, so it would outlive a failed write until finalization.
+                deflater.end();
+            }
         }else {
             inputSource.write(rawCounter);
             rawStream.flush();
